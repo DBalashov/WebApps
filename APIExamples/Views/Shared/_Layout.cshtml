@@ -1,0 +1,17 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <base href="~/" />
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet"/>
+    <link rel="stylesheet" href="~/dist/vendor.css" asp-append-version="true" />
+</head>
+<body>
+@RenderBody()
+
+<script src="~/dist/vendor.js" asp-append-version="true"></script>
+@RenderSection("scripts", required: false)
+</body>
+</html>
