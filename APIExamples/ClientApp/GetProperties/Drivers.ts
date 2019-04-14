@@ -11,7 +11,7 @@ export default class GetPropertiesDriversComponent extends VueEx {
 
     run() {
         this.connector.GetDriverProperties(this.getCheckedIDs(store.state.Drivers)).done((r:IGetPropertiesResult[]) => {
-            this.Content = JSON.stringify(r);
+            this.Content = JSON.stringify(r, null, "  ");
             this.Items = r;
         });
     }

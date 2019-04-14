@@ -1,24 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
+using APIShared;
 using Microsoft.AspNetCore.Mvc;
-using WebMapBus.Models;
 
 namespace WebMapBus.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        readonly ConfigurationSettings settings;
+        
+        public HomeController(ConfigurationSettings settings)
         {
-            return View();
+            this.settings = settings;
         }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        
+        public async Task<IActionResult> Index()
         {
-            return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
+            return View(await HomeIndexModel.Create(settings));
         }
     }
 }

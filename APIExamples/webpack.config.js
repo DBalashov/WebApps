@@ -24,7 +24,7 @@ module.exports = function(env) {
                         }
                     }
                 ] },
-                { test: /\.css$/, use: isDevBuild ? [ 'style-loader', 'css-loader' ] : pluginExtractText.extract({ use: 'css-loader?minimize' }) },
+                { test: /\.css$/, use: isDevBuild ? [ 'style-loader', 'css-loader' ] : pluginExtractText.extract({ use: 'css-loader' }) },
                 { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' }
             ]
         },
@@ -39,10 +39,6 @@ module.exports = function(env) {
                 'process.env': {
                     NODE_ENV: JSON.stringify(isDevBuild ? 'development' : 'production')
                 }
-            }),
-            new webpack.DllReferencePlugin({
-                context: __dirname,
-                manifest: require('./wwwroot/dist/vendor-manifest.json')
             })
         ].concat(isDevBuild ? [
             // Plugins that apply in development builds only

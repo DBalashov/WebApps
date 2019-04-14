@@ -10,6 +10,6 @@ export default class EnumDevicesComponent extends EnumBase {
     }
     
     run() {
-        this.updateDevices().done(r => this.Content = JSON.stringify(r));
+        this.updateDevices().done(r => this.Content = JSON.stringify(r, null, "  "));
     }
 }

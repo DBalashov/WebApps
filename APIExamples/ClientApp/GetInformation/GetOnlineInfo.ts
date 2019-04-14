@@ -13,7 +13,7 @@ export default class GetOnlineInfoComponent extends VueEx {
 
     run() {
         this.connector.GetOnlineInfo(this.getCheckedIDs(store.state.Devices)).done((r:IGetOnlineInfoItem[]) => {
-            this.Content = JSON.stringify(r);
+            this.Content = JSON.stringify(r, null, "  ");
             this.Items = r;
         });
     }

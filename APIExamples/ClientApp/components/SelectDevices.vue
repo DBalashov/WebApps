@@ -12,7 +12,6 @@
 </template>
 
 <script>
-    import _ from 'lodash';
     import {store,connector} from '../boot';
     
     export default {
@@ -24,7 +23,7 @@
                     connector.EnumDevices().done(function (r) {
                         store.state.Devices.Items = r.Items;
                         store.state.Devices.Groups = r.Groups;
-                        store.state.Devices.Checked = _(r.Items)
+                        store.state.Devices.Checked = r.Items
                             .map(function (it) {
                                 return {
                                     ID: it.ID,
@@ -34,8 +33,7 @@
 
                                     Items: it
                                 }
-                            })
-                            .value();
+                            });
                         return r;
                     });
                 }

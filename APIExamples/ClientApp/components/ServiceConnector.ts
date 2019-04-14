@@ -2,7 +2,7 @@ import $ from "jquery";
 import * as moment from "moment";
 
 export class ServiceConnector {
-    public url: string;
+    public url: string = "";
     public token: string = "";
     public schemaID: string = "";
     public serviceName:string = "";
@@ -117,6 +117,28 @@ export class ServiceConnector {
             });
     }
 
+    public GetGeofencesInRect(latMin:number, lngMin:number, latMax:number, lngMax:number): JQueryPromise<IGeofenceItem[]> {
+        return this.post<IGeofenceItem[]>("GetGeoFencesInRect",
+            {
+                session: this.token,
+                schemaID: this.schemaID,
+                latmin: latMin,
+                lngmin: lngMin,
+                latmax: latMax,
+                lngmax: lngMax
+            },
+            (r: any) => {
+                let items = [];
+                for (let it in r) {
+                    let temp = <IGeofenceItem>(r[it]);
+                    temp.Fill = this.colorFromARGB(temp.Fill);
+                    temp.Line = this.colorFromARGB(temp.Line);
+                    items.push(temp);
+                }
+                return items;
+            });
+    }
+
     public GetOnlineInfo(ids?: string[]): JQueryPromise<IGetOnlineInfoItem[]> {
         return this.post<IGetOnlineInfoItem[]>((ids == null ? "GetOnlineInfoAll" : "GetOnlineInfo"),
             {
@@ -157,7 +179,7 @@ export class ServiceConnector {
             (r: any) => this.convert<IGetPropertiesResult[]>(r));
     }
 
-    public GetTrips(ids: string[], sd: Date, ed: Date, tripSplitterIndex: number = -1, tripParams: string[] = []): JQueryPromise<ITripResult[]> {
+    public GetTrips(ids: string[], sd: Date, ed: Date, tripSplitterIndex: number = -1, tripParams: string[] = [], tripTotalParams: string[] = []): JQueryPromise<ITripResult[]> {
         return this.post<ITripResult[]>("GetTrips",
             {
                 session: this.token,
@@ -166,13 +188,59 @@ export class ServiceConnector {
                 SD: moment(sd).format(this.FMT_DT),
                 ED: moment(ed).format(this.FMT_DT),
                 tripSplitterIndex: tripSplitterIndex,
-                tripParams: tripParams.length ? tripParams.join(",") : ""
+                tripParams: tripParams.length ? tripParams.join(",") : "",
+                tripTotalParams: tripParams.length ? tripParams.join(",") : ""
             },
             (r: any) => {
                 let items: ITripResult[] = [];
                 for (let it in r)
                     if (r[it])
                         items.push(r[it]);
+                return items;
+            });
+    }
+
+    public GetStage(ids: string[], sd: Date, ed: Date, stageName: string, tripParams: string[] = [], tripTotalParams: string[] = []): JQueryPromise<ITripStage[]> {
+        return this.post<ITripStage[]>("GetStage",
+            {
+                session: this.token,
+                schemaID: this.schemaID,
+                IDs: ids.join(","),
+                SD: moment(sd).format(this.FMT_DT),
+                ED: moment(ed).format(this.FMT_DT),
+                stageName: stageName,
+                tripParams: tripParams.length ? tripParams.join(",") : "",
+                tripTotalParams: tripParams.length ? tripParams.join(",") : ""
+            },
+            (r: any) => {
+                let items: ITripStage[] = [];
+                for (let it in r)
+                    if (r[it]) {
+                        r[it].ID = it;
+                        items.push(r[it]);
+                    }
+                return items;
+            });
+    }
+
+    public GetTrack(ids: string[], sd: Date, ed: Date, tripSplitterIndex: number = -1): JQueryPromise<ITrackResult[]> {
+        return this.post<ITrackResult[]>("GetTrack",
+            {
+                session: this.token,
+                schemaID: this.schemaID,
+                IDs: ids.join(","),
+                SD: moment(sd).format(this.FMT_DT),
+                ED: moment(ed).format(this.FMT_DT),
+                tripSplitterIndex: tripSplitterIndex,
+            },
+            (r: any) => {
+                let items: ITrackResult[] = [];
+                for (let it in r)
+                    if (r[it])
+                        items.push({
+                            ID: it,
+                            Item: r[it]
+                        });
                 return items;
             });
     }
@@ -238,6 +306,26 @@ export class ServiceConnector {
             },
             (r: IDataLoadSaveResult) => r.ok);
     }
+
+    public CacheFind(ids: string[], sd: Date, ed: Date, stageName: string, values:string[]): JQueryPromise<ICacheFindResult[]> {
+        return this.post<ICacheFindResult[]>("CacheFind",
+            {
+                session: this.token,
+                schemaID: this.schemaID,
+                IDs: ids != null && ids.length > 0 ? ids.join(",") : "all",
+                SD: moment(sd).format(this.FMT_DT),
+                ED: moment(ed).format(this.FMT_DT),
+                stageName: stageName,
+                values: values.join(',')
+            },
+            (r: any) => {
+                let items: ICacheFindResult[] = [];
+                for (let it in r)
+                    if (r[it])
+                        items.push(r[it]);
+                return items;
+            });
+    }
 }
 
 export interface ISchemaItem {
@@ -278,6 +366,7 @@ export interface IEnumDevicesResult {
 export interface IEnumDeviceItem extends IEnumCommonItem {
     Serial: number;
     Image: string;
+    ImageColored: string;
 }
 
 // geofences
@@ -287,11 +376,12 @@ export interface IEnumGeofencesResult {
 }
 
 export interface IEnumGeofenceItem extends IEnumCommonItem {
-    
+
 }
 
 export interface IGeofenceItem {
     ID: string;
+    ParentID: string;
     Name: string;
     ImageName: string;
     Line: string;
@@ -319,7 +409,7 @@ export interface IEnumImplementsResult {
 }
 
 export interface IEnumImplementItem extends IEnumCommonItem {
-    
+
 }
 
 // parameters
@@ -414,7 +504,7 @@ export interface ITripResult {
     ED: string;
     _LastCoords: string;
     _LastData: string;
-    
+
     Trips: ITripItem[];
     Total: any;
     LastPosition: ILatLng;
@@ -431,6 +521,7 @@ export interface ITripItem {
 }
 
 export interface ITripStage {
+    ID: string;
     Name: string;
     Alias: string;
     Params: string[];
@@ -489,4 +580,36 @@ export interface ITripTableValueItem {
     Format: string;
     Statuses: ITripStageItemStatus[];
     Values: any[];
+}
+
+export interface ITrackResult {
+    ID: string;
+    Item: ITrackInfo[];
+}
+
+export interface ITrackInfo {
+    Index: number;
+    DT: string;
+    Speed: number[];
+    Lat: number[];
+    Lng: number[];
+}
+
+export interface ICacheFindResult
+{
+    ID: string;
+    Name: string;
+    Serial: number;
+    Items: ICacheFindResultItem[];
+}
+
+export interface ICacheFindResultItem
+{
+    SD: string;
+    ED: string;
+    Status: string;
+    Caption: string;
+    StartPoint:ILatLng;
+    EndPoint: ILatLng;
+    Values: any;
 }

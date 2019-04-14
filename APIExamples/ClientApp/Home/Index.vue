@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <p class="card-text">
                         window["external-settings"] = 
-                        <pre v-html="JSON.stringify(ExternalSettings, null, 4)"></pre>
+                        <pre v-html="JSON.stringify(ExternalSettings, null, '  ')"></pre>
                     </p>
                 </div>
             </div>

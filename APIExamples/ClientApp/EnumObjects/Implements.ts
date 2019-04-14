@@ -5,7 +5,7 @@ import EnumBase from "./EnumBase";
 @Component
 export default class EnumImplementsComponent extends EnumBase {
     run() {
-        this.updateImplements().done(r => this.Content = JSON.stringify(r));
+        this.updateImplements().done(r => this.Content = JSON.stringify(r, null, "  "));
     }
 
     getTree():string {

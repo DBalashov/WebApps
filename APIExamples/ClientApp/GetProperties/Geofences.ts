@@ -11,7 +11,7 @@ export default class GetPropertiesGeofencesComponent extends VueEx {
 
     run() {
         this.connector.GetGFProperties(this.getCheckedIDs(store.state.Geofences)).done((r:IGetPropertiesResult[]) => {
-            this.Content = JSON.stringify(r);
+            this.Content = JSON.stringify(r, null, "  ");
             this.Items = r;
         });
     }

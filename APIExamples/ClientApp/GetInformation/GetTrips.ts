@@ -1,10 +1,8 @@
 import {Component} from 'vue-property-decorator';
-import $ from "jquery";
 import {VueEx} from "../VueEx";
 import {ITripResult} from "../components/ServiceConnector";
 import {store} from "../boot";
 import * as moment from "moment";
-import _ from "lodash";
 
 @Component
 export default class GetTripsComponent extends VueEx {
@@ -31,9 +29,8 @@ export default class GetTripsComponent extends VueEx {
             this.valueED = d.toDate().getTime();
         });
         this.$watch("tripParams", () => {
-            this.formattedTripParams = _(this.tripParams.split(","))
+            this.formattedTripParams = this.tripParams.split(",")
                 .map((f: any) => "'" + f + "'")
-                .value()
                 .join(",");
         });
         this.SD = moment().startOf("day").format(this.FMT_FROM);
@@ -51,7 +48,7 @@ export default class GetTripsComponent extends VueEx {
             new Date(this.valueED),
             this.tripSplitterIndex,
             this.tripParams.split(",")).done((r: ITripResult[]) => {
-            this.Content = JSON.stringify(r);
+            this.Content = JSON.stringify(r, null, "  ");
             this.Items = r;
         });
     }

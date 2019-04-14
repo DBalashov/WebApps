@@ -7,7 +7,7 @@ import {IGetPropertiesResult} from "../components/ServiceConnector";
 export default class GetPropertiesDevicesComponent extends VueEx {
     run() {
         this.connector.GetProperties(this.getCheckedIDs(store.state.Devices)).done((r:IGetPropertiesResult[]) => {
-            this.Content = JSON.stringify(r);
+            this.Content = JSON.stringify(r, null, "  ");
             this.Items = r;
         });
     }

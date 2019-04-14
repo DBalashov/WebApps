@@ -6,7 +6,7 @@ import EnumBase from "./EnumBase";
 @Component
 export default class EnumDriversComponent extends EnumBase {
     run() {
-        this.updateDrivers().done(r => this.Content = JSON.stringify(r));
+        this.updateDrivers().done(r => this.Content = JSON.stringify(r, null, "  "));
     }
 
     getTree():string {

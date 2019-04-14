@@ -48,8 +48,11 @@ th.r, td.r { text-align:right}
 
 .items {
     font-size:9pt;
-    max-height:500px;
-    overflow-y:auto
+    max-height:800px;
+    overflow-y:auto;
+    white-space: pre;
+    font-family: Consolas;
+    line-height: 0.85rem;
 }
 
 .items-2x {

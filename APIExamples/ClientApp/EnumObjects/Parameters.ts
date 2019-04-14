@@ -11,7 +11,7 @@ export default class EnumParametersComponent extends VueEx {
 
     run() {
         this.connector.EnumParameters(this.getCheckedIDs(store.state.Devices)).done((r:IEnumParameter[]) => {
-            this.Content = JSON.stringify(r);
+            this.Content = JSON.stringify(r, null, "  ");
             this.Items = r;
         });
     }

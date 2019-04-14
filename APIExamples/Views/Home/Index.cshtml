@@ -1,30 +1,11 @@
-﻿<div id='app-root'>Loading...</div>
+﻿@using Newtonsoft.Json
+@model APIShared.HomeIndexModel
+
+<div id='app-root'>Loading...</div>
 
 @section scripts {
     <script type="text/javascript">
-        window['external-settings'] = {
-            "Name": "Bus1",
-            "Urls": {
-                Service: "//localhost/Dev/ServiceJSON",
-                Relative: "",
-                Content: ""
-            },
-            "Token": "420B69E5B3424F3A0FAB6056C5AEB2B66EE82FBA5CC033079A1FBF48BF90E4AACC106C613B4066F94FE37F6506D7C2AB9BAEC052CCEACF00C9433831C007F438",
-            "User": {
-                "ID": 1,
-                "UID": "ea9f8789-2a54-41aa-bb41-4480bcc08c73",
-                "Name": "Administrator",
-                "Login": "admin",
-                "Mail": "denisio@tk-chel.ru"
-            },
-            "Organization": {
-                "ID": 145,
-                "UID": "425c2fca-c2db-412e-9418-e2e382c7c5cb",
-                "Name": "DELKO  [145]",
-                "Props": {}
-            },
-            "Settings": {}
-        }
+        window['external-settings'] = @Html.Raw(JsonConvert.SerializeObject(Model));
     </script>
     
     <script src="~/dist/main.js" asp-append-version="true"></script>

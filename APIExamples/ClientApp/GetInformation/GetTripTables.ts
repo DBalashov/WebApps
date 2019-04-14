@@ -4,7 +4,6 @@ import {VueEx} from "../VueEx";
 import {ITripTableResult} from "../components/ServiceConnector";
 import {store} from "../boot";
 import * as moment from "moment";
-import _ from "lodash";
 
 @Component
 export default class GetTripsTablesComponent extends VueEx {
@@ -30,9 +29,8 @@ export default class GetTripsTablesComponent extends VueEx {
             this.valueED = d.toDate().getTime();
         });
         this.$watch("onlineParams", () => {
-            this.formattedOnlineParams = _(this.onlineParams.split(","))
+            this.formattedOnlineParams = this.onlineParams.split(",")
                 .map((f: any) => "'" + f + "'")
-                .value()
                 .join(",");
         });
         this.SD = moment().startOf("day").format(this.FMT_FROM);
@@ -58,7 +56,7 @@ export default class GetTripsTablesComponent extends VueEx {
             new Date(this.valueED),
             this.tripSplitterIndex,
             this.onlineParams.split(",")).done((r: ITripTableResult[]) => {
-            this.Content = JSON.stringify(r);
+            this.Content = JSON.stringify(r, null, "  ");
             this.Items = r;
         });
     }

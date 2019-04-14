@@ -5,7 +5,7 @@ import EnumBase from "./EnumBase";
 @Component
 export default class EnumGeofencesComponent extends EnumBase {
     run() {
-        this.updateGeofences().done(r => this.Content = JSON.stringify(r));
+        this.updateGeofences().done(r => this.Content = JSON.stringify(r, null, "  "));
     }
 
     getTree():string {
