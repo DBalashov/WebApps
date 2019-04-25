@@ -4,28 +4,39 @@ import L from 'leaflet';
 import _ from "lodash";
 import $ from "jquery";
 import {$bus, connector} from "../boot";
-import {IEnumDeviceItem, IGeofenceItem, IGetOnlineInfoItem, ITrackInfo} from "../components/ServiceConnector";
+import {IEnumDeviceItem, IGeofenceItem, IGetOnlineInfoItem} from "../components/ServiceConnector";
 import moment from "moment";
-import {buildCircle, buildPolygon, buildTooltip, getDT, markerGetIcon, tripConvert} from "./Extenders";
+import {buildCircle, buildPolygon, buildTooltip, markerGetIcon} from "./Extenders";
+import {CarTrip} from "./CarTrip"
+import {GFTrip} from "./GFTrip"
 
 @Component
 export default class HomeIndexComponent extends VueEx {
-    carGroups:any = {};
-    cars: any = {};
-    geofences: any = {};
+    CurrentTrip: CarTrip;
+    GFTrip: GFTrip = new GFTrip();
 
+    carGroups: any = {};
+    cars: any = {};
+
+    geofenceFindText: string = "";
+    geofenceFindList: IGeofenceItem[] = [];
+    geofences: any = {};
     geofenceLoaded: boolean = false;
     geofenceSelected: IGeofenceItem[] = [];
-    geofenceFindText: string="";
-    geofenceFindList: IGeofenceItem[] = [];
     geofenceList: IGeofenceItem[] = [];
-    map: L.Map | undefined;
 
     layerGFCompleted: any = {};
     layerGFs: any = {};
-    layerTrip: L.LayerGroup = L.layerGroup([], {});
+
+    map: L.Map | undefined;
     layerCars: L.LayerGroup = L.layerGroup([], {});
     groupActiveID: string = "";
+    geofenceCompleted: any = {};
+
+    constructor() {
+        super();
+        this.CurrentTrip = new CarTrip(connector);
+    }
 
     created() {
         $(window).on("resize", this.updateSize);
@@ -42,7 +53,7 @@ export default class HomeIndexComponent extends VueEx {
 
         this.$watch("geofenceLoaded", () => {
             $bus.$on("geo-group-changed", (id: string) => { // todo (all)
-                if(this.layerGFs.options) {
+                if (this.layerGFs.options) {
                     this.layerGFs.clearLayers();
                     this.layerGFCompleted.clearLayers();
                 }
@@ -55,7 +66,7 @@ export default class HomeIndexComponent extends VueEx {
                         else buildCircle(p,
                             isCompleted ? this.layerGFCompleted : this.layerGFs,
                             isCompleted ? 'green' : 'red',
-                            (e:any) => this.showTrips(this.geofences[e.target.options.__id]));
+                            (e: any) => this.GFTrip.Show(this.geofences[e.target.options.__id]));
                     })
                 }
             });
@@ -66,7 +77,7 @@ export default class HomeIndexComponent extends VueEx {
         $('a[data-toggle="tab"]').on('shown.bs.tab', () => setTimeout(this.updateSize, 400));
 
         this.updateSize();
-        this.map = L.map('map', {preferCanvas: true, renderer: L.canvas()});
+        this.CurrentTrip.map = this.map = L.map('map', {preferCanvas: true, renderer: L.canvas()});
         this.map
             .addLayer(L.tileLayer(
                 //'//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -77,7 +88,7 @@ export default class HomeIndexComponent extends VueEx {
                 }))
             .setView([55.5, 61.2], 13)
             .addLayer(this.layerCars)
-            .addLayer(this.layerTrip);
+            .addLayer(this.CurrentTrip.layerTrip);
 
         this.buildGFClusters();
         connector.EnumDevices()
@@ -94,7 +105,6 @@ export default class HomeIndexComponent extends VueEx {
             })
     }
 
-    geofenceCompleted: any={};
     refreshAllTrips() {
         let sd = moment().startOf('day').toDate();
         let ed = new Date();
@@ -127,7 +137,7 @@ export default class HomeIndexComponent extends VueEx {
         setTimeout(() => {
             this.layerGFs = (<any>window)["L"].markerClusterGroup({
                 //spiderfyDistanceMultiplier: 2
-                iconCreateFunction: function(c:any) {
+                iconCreateFunction: function (c: any) {
                     return new L.DivIcon({
                         html: c ? c.getChildCount().toString() : "",
                         className: "cluster cluster-normal"
@@ -136,7 +146,7 @@ export default class HomeIndexComponent extends VueEx {
             });
 
             this.layerGFCompleted = (<any>window)["L"].markerClusterGroup({
-                iconCreateFunction: function(c:any) {
+                iconCreateFunction: function (c: any) {
                     return new L.DivIcon({
                         html: c ? c.getChildCount().toString() : "",
                         className: "cluster cluster-completed"
@@ -144,14 +154,14 @@ export default class HomeIndexComponent extends VueEx {
                 }
             });
 
-            if(this.map) {
+            if (this.map) {
                 this.map.addLayer(this.layerGFs);
                 this.map.addLayer(this.layerGFCompleted);
 
                 connector.GetGeofences(["all"]).done(r => {
                     this.layerGFs.clearLayers();
                     this.layerGFCompleted.clearLayers();
-                    this.geofences = {};
+                    this.geofences = this.CurrentTrip.geofences = {};
                     this.geofenceList = r;
                     this.geofenceFindText = "429";
                     r.forEach(p => this.geofences[p.ID] = p);
@@ -191,7 +201,7 @@ export default class HomeIndexComponent extends VueEx {
                 r.filter(p => p != null && p._LastCoords != null)
                     .forEach(p => this.refreshPositionItem(p, bounds));
 
-                if(this.map)
+                if (this.map)
                     this.map.fitBounds(bounds);
             });
     }
@@ -199,7 +209,7 @@ export default class HomeIndexComponent extends VueEx {
     refreshPositionItem(p: IGetOnlineInfoItem, bounds: L.LatLngBounds) {
         let ll = L.latLng(p.LastPosition.Lat, p.LastPosition.Lng);
         let car = this.cars[p.ID];
-        if(car) {
+        if (car) {
             L.marker(ll,
                 <any>{
                     icon: markerGetIcon(p, car),
@@ -212,129 +222,20 @@ export default class HomeIndexComponent extends VueEx {
         }
     }
 
-    markerClick(m:any) {
-        let car:IEnumDeviceItem = this.cars[m.target.options.__id];
+    markerClick(m: any) {
+        let car: IEnumDeviceItem = this.cars[m.target.options.__id];
         let sd = moment().startOf('day').add('month', -1).toDate();
         let ed = moment(sd).add('day', 2).toDate();
-        this.tripBuild(car, sd, ed);
+        this.CurrentTrip.Build(car, sd, ed);
     }
 
-    tripBuild(car:IEnumDeviceItem, sd:Date, ed:Date) {
-        connector.GetTrips([car.ID], sd, ed, -1, ["TotalDistance", "MoveDuration", "ParkDuration"])
-            .done(r => {
-                let propVRN = car.Properties.filter(p => p.Name == "VehicleRegNumber");
-                this.CurrentTrip = r.length == 0 || r[0].Trips.length == 0 ? {
-                    SD: sd,
-                    ED: ed,
-                    Car: car,
-                    VRN: propVRN.length ? propVRN[0].Value : "",
-                    Items: [],
-                    S: getDT(sd),
-                    E: getDT(ed),
-                } : tripConvert(car, sd, ed, r[0].Trips[0], this.geofences);
-                if (this.CurrentTrip.Items.length == 0) this.layerTrip.clearLayers();
-                else connector.GetTrack([car.ID], sd, ed)
-                    .done(r => {
-                        this.layerTrip.clearLayers();
-                        if (r.length && r[0].Item && r[0].Item.length)
-                            this.tripTrackBuild(r[0].Item[0]);
-                    });
-            });
-    }
-
-    tripShift(value:number) {
-        if(this.CurrentTrip.SD)
-            this.tripBuild(this.CurrentTrip.Car,
-                moment(this.CurrentTrip.SD).add(value, 'days').toDate(),
-                moment(this.CurrentTrip.ED).add(value, 'days').toDate());
-    }
-
-    tripTrackBuild(item:ITrackInfo) {
-        let ll:L.LatLng[] = [];
-        let bounds = L.latLngBounds([]);
-        for(let i=0; i<item.Lat.length; i++) {
-            let p = L.latLng(item.Lat[i], item.Lng[i]);
-            ll.push(p);
-            bounds.extend(p);
-        }
-
-        L.polyline(ll, {
-            color:'green',
-            weight: 8,
-            opacity: 0.5
-        }).addTo(this.layerTrip);
-
-        for(let i=0, index=1; i < this.CurrentTrip.Items.length; i++) {
-            let pnt = this.CurrentTrip.Items[i];
-            if(pnt.Type>0) {
-                L.marker(
-                    pnt.PStart,
-                    {
-                        icon: L.divIcon({
-                            html: ['<div>', (index + 1).toString(), '</div><div>', pnt.S.T, '</div>'].join(''),
-                            className: "stop-point"
-                        })
-                    })
-                    .bindTooltip(pnt.GF.Name)
-                    .addTo(this.layerTrip);
-                index++;
-            }
-        }
-
-        if(this.map)
-            this.map.fitBounds(bounds);
-    }
-
-    gotoPoint(ll:L.LatLng) {
-        if(this.map)
+    gotoPoint(ll: L.LatLng) {
+        if (this.map)
             this.map.setView(ll, 17);
     }
 
-    gotoGeofence(p:IGeofenceItem) {
-        if(this.map)
+    gotoGeofence(p: IGeofenceItem) {
+        if (this.map)
             this.map.setView(L.latLng(p.Lat[0], p.Lng[0]), 17);
     }
-
-    clearInfo() {
-        this.layerTrip.clearLayers();
-        this.CurrentTrip = {
-            Items: []
-        };
-    }
-
-    showTrips(p:IGeofenceItem) {
-        let sd = moment().startOf('month').add('month', -1).toDate();
-        let ed = new Date();
-
-        this.GFTrips.S = getDT(sd);
-        this.GFTrips.E = getDT(ed);
-        this.GFTrips.Items = [];
-        this.GFTrips.Name = p.Name;
-        connector.CacheFind([], sd, ed, "GeoFence1", [p.ID])
-            .done(r => {
-                let items: any[] = [];
-                r.forEach(f => {
-                    f.Items.forEach(it => {
-                        items.push({
-                            S: getDT(it.SD, true),
-                            E: getDT(it.ED, true),
-                            Name: f.Name,
-                            Serial: f.Serial
-                        });
-                    });
-                });
-                this.GFTrips.Items = items.sort((a,b) => a.S.V.localeCompare(b.S.V));
-            });
-    }
-
-    GFTrips: any = {
-        S: {D: "", T: ""},
-        E: {D: "", T: ""},
-        Name: "",
-        Items: []
-    }
-
-    CurrentTrip: any = {
-        Items: []
-    };
 }

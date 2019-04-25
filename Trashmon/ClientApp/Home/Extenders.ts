@@ -2,7 +2,6 @@ import moment from "moment";
 import {IEnumCommonGroup, IEnumDeviceItem, IGeofenceItem, IGetOnlineInfoItem, ITripItem, ITripStage} from "../components/ServiceConnector"
 import L from "leaflet"
 import {ExternalSettings} from "../boot"
-import _ from "lodash";
 
 export function getDT(dt:any, asutc:boolean = false):any {
     let parsed = asutc ? moment.utc(dt).local() : moment(dt);
@@ -24,7 +23,7 @@ export function markerGetIcon(p: IGetOnlineInfoItem, car:IEnumDeviceItem): L.Div
 
     return L.divIcon({
         html: ["<div class='car-marker__title title'>", car.Name, "</div><img src='", ExternalSettings.Urls.Image, "/Car/", car.ImageColored, "' class='car-marker__image' />"].join(''),
-        className: "car-marker " + (lastData < (60*60*10*24) ? "" : "old-data")
+        className: "car-marker " + (lastData < (60*60*10) ? "" : "old-data")
     });
 }
 
@@ -77,58 +76,7 @@ export function buildTooltip(car:IEnumDeviceItem, group:IEnumCommonGroup, p:IGet
     popupContent.push("</tbody>");
     popupContent.push("</table>");
 
-    let propValues: any[] = [];
-    _(propValues).each((f:any) => popupContent.push(f.Name + ": " + (f.Value || "")));
+    // let propValues: any[] = []; // todo add properties
+    // _(propValues).each((f:any) => popupContent.push(f.Name + ": " + (f.Value || "")));
     return popupContent.join("");
-}
-
-
-export function tripConvert(car:IEnumDeviceItem, sd:Date, ed:Date, trip:ITripItem, geofences:any):any {
-    let r = {
-        S: getDT(trip.SD),
-        E: getDT(trip.ED),
-        Items: [],
-        SD: sd,
-        ED: ed,
-        Car: car,
-        VRN: (_(car.Properties).find(p => p.Name == "VehicleRegNumber") || {Value: ""}).Value
-    };
-
-    let stage:ITripStage|undefined = _(trip.Stages).find(st => st.Name.indexOf("GeoFence") == 0);
-    if(stage) {
-        let parmDistanceIndex = stage.Params.indexOf('TotalDistance');
-        let parmDurationMoveIndex = stage.Params.indexOf('MoveDuration');
-        let parmDurationParkIndex = stage.Params.indexOf('ParkDuration');
-
-        r.Items = <any> _(stage.Items)
-            .chain()
-            .map(sti => {
-                if(sti.StatusIDs == null) {
-                    let moveDuration = formatDuration(sti.Values[parmDurationMoveIndex]);
-                    let parkDuration = formatDuration(sti.Values[parmDurationParkIndex]);
-
-                    if(moveDuration || parkDuration)
-                        return {
-                            Type: 0,
-                            MoveDuration: moveDuration,
-                            ParkDuration: parkDuration
-                        }
-                    else
-                        return { Type: -1 };
-                }
-                else {
-                    return {
-                        Type: 1,
-                        S: getDT(sti.SD, true),
-                        E: getDT(sti.ED, true),
-                        GF: geofences[sti.StatusID],
-                        PStart: L.latLng(sti.StartPoint.Lat, sti.StartPoint.Lng),
-                        PEnd: L.latLng(sti.EndPoint.Lat, sti.EndPoint.Lng),
-                        Distance: sti.Values[parmDistanceIndex]
-                    }
-                }
-            })
-            .value();
-    }
-    return r;
 }

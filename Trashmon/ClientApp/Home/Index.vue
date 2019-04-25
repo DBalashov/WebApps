@@ -27,18 +27,18 @@
                                         {{CurrentTrip.Car.Name}} ({{CurrentTrip.Car.Serial}}) - {{CurrentTrip.VRN}}
                                     </th>
                                     <th class="text-center">
-                                        <a class="" href="javascript:void(0)" v-on:click="clearInfo"><i class="fa fa-times"></i></a>
+                                        <a class="" href="javascript:void(0)" v-on:click="CurrentTrip.ClearTrip()"><i class="fa fa-times"></i></a>
                                     </th>
                                 </tr>
                                 <tr>
                                     <td>Начало периода</td>
                                     <td>{{CurrentTrip.S.D}} - {{CurrentTrip.S.T}}</td>
-                                    <td class="text-center"><a href="javascript:void(0)" v-on:click="tripShift(-1)"><i class="fa fa-chevron-up"></i></a></td>
+                                    <td class="text-center"><a href="javascript:void(0)" v-on:click="CurrentTrip.Shift(-1)"><i class="fa fa-chevron-up"></i></a></td>
                                 </tr>
                                 <tr>
                                     <td>Конец периода</td>
                                     <td>{{CurrentTrip.E.D}} - {{CurrentTrip.E.T}}</td>
-                                    <td class="text-center"><a href="javascript:void(0)" v-on:click="tripShift(1)"><i class="fa fa-chevron-down"></i></a></td>
+                                    <td class="text-center"><a href="javascript:void(0)" v-on:click="CurrentTrip.Shift(1)"><i class="fa fa-chevron-down"></i></a></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -92,7 +92,7 @@
                                     <tbody>
                                         <tr v-for="o in geofenceFindList">
                                             <td><a href="javascript:void(0)" v-on:click="gotoGeofence(o)">{{o.Name}}</a></td>
-                                            <td class="text-right"><a href="javascript:void(0)" v-on:click="showTrips(o)">(рейсы)</a></td>
+                                            <td class="text-right"><a href="javascript:void(0)" v-on:click="GFTrip.Show(o)">(рейсы)</a></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -100,24 +100,24 @@
                         </div>
                     </form>
                     <div style="width:100%; overflow-y:auto" data-id="info-result">
-                        <table style="width: 100%;" class="form-group text-muted" v-if="GFTrips.S.D">
+                        <table style="width: 100%;" class="form-group text-muted" v-if="GFTrip.S.D">
                             <tr>
                                 <td>Начало периода</td>
-                                <td class="text-right">{{GFTrips.S.D}} - {{GFTrips.S.T}}</td>
+                                <td class="text-right">{{GFTrip.S.D}} - {{GFTrip.S.T}}</td>
                             </tr>
                             <tr>
                                 <td>Конец периода</td>
-                                <td class="text-right">{{GFTrips.E.D}} - {{GFTrips.E.T}}</td>
+                                <td class="text-right">{{GFTrip.E.D}} - {{GFTrip.E.T}}</td>
                             </tr>
                             <tr>
                                 <td>Геозона</td>
-                                <td class="text-right">{{GFTrips.Name}}</td>
+                                <td class="text-right">{{GFTrip.Name}}</td>
                             </tr>
                         </table>
-                        <template v-if="GFTrips.Items.length">
+                        <template v-if="GFTrip.Items.length">
                             <table style="width:100%;" class="mt-1">
                                 <tbody>
-                                <tr v-for="o in GFTrips.Items">
+                                <tr v-for="o in GFTrip.Items">
                                     <td>{{o.S.D}} - {{o.S.T}}</td>
                                     <td>{{o.Name}}</td>
                                     <td>{{o.Serial}}</td>
