@@ -1,6 +1,6 @@
 $CD    = (Get-Item -Path ".\" -Verbose).FullName
 $BUILD = "$CD\_Build"
-$PKZ   = "$CD\..\_SharedExt\pkz.exe"
+$PKZ   = "$CD\pkz.exe"
 
 Remove-Item $BUILD -Force -Recurse -ErrorAction SilentlyContinue
 New-Item $BUILD -ItemType directory | Out-Null
