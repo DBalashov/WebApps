@@ -1,6 +1,5 @@
 import {Component} from 'vue-property-decorator';
 import {VueEx} from "../VueEx";
-import _ from "lodash";
 import $ from "jquery";
 import {connector, settings} from "../boot";
 const uuid = require("uuid/v4"); 
@@ -17,31 +16,30 @@ export default class EditIndexComponent extends VueEx {
         connector.EnumDevices()
             .done(r => {
                 let groups:any = {};
-                _(r.Groups).each(g => groups[g.ID] = g);
+                r.Groups.forEach(g => groups[g.ID] = g);
                 
-                this.Cars = _(r.Items)
-                    .sortBy(c => c.Name)
+                this.Cars = r.Items
+                    .sort((a,b) => a.Name.localeCompare(b.Name))
                     .map(c => {
-                        let propVRN = _(c.Properties).find(p => p.Name == "VehicleRegNumber");
+                        let propVRN = c.Properties.filter(p => p.Name == "VehicleRegNumber");
                         return {
                             ID: c.ID,
                             Name: c.Name,
                             Serial: c.Serial,
                             Checked: false,
                             Group: c.ParentID ? groups[c.ParentID] : null,
-                            VRN: propVRN ? propVRN.Value : ""
+                            VRN: propVRN.length ? propVRN[0].Value : ""
                         }
-                    })
-                    .value();
+                    });
             });
 
         connector.EnumGeofences()
             .done(r => {
                 let groups:any = {};
-                _(r.Groups).each(g => groups[g.ID] = g);
-
-                this.Geofences = _(r.Items)
-                    .sortBy(c => c.Name)
+                r.Groups.forEach(g => groups[g.ID] = g);
+                
+                this.Geofences = r.Items
+                    .sort((a,b) => a.Name.localeCompare(b.Name))
                     .map(c => {
                         return {
                             ID: c.ID,
@@ -49,17 +47,16 @@ export default class EditIndexComponent extends VueEx {
                             Checked: false,
                             Group: c.ParentID ? groups[c.ParentID] : null
                         }
-                    })
-                    .value();
+                    });
             });
     }
 
     mounted() {
         connector.DataLoad(settings.routeSettingName)
             .done((r:any) => {
-                let items = r[settings.routeSettingName] ? JSON.parse(r[settings.routeSettingName]) : [];
-                _(items).each((it:any) => {
-                    _(it.routes).each(route => {
+                let items:any[] = r[settings.routeSettingName] ? JSON.parse(r[settings.routeSettingName]) : [];
+                items.forEach(it => {
+                    it.routes.forEach((route:any) => {
                         if(route.geofences) return;
                         route.geofences = [];    
                     });
@@ -84,51 +81,50 @@ export default class EditIndexComponent extends VueEx {
     }
 
     cityRemove(cityId: string) {
-        this.$delete(this.Items, _(this.Items).findIndex((city: any) => city.id == cityId));
+        this.$delete(this.Items, this.Items.indexOf((city:any) => city.id == cityId));
     }
 
     routeAdd(cityId: string) {
-        let city = _(this.Items).find(city => city.id == cityId);
-        city.routes.push({
-            id: uuid(),
-            name: "маршрут #" + city.routes.length,
-            cars: [],
-            geofences: []
-        })
+        let city:any[] = this.Items.filter(city => city.id == cityId);
+        if(city.length)
+            city[0].routes.push({
+                id: uuid(),
+                name: "маршрут #" + city[0].routes.length,
+                cars: [],
+                geofences: []
+            });
     }
 
     routeRemove(cityId: string, id: string) {
-        let city = _(this.Items).find(city => city.id == cityId);
-        this.$delete(city.routes, _(city.routes).findIndex((route: any) => route.id == id));
+        let city = this.Items.filter(city => city.id == cityId);
+        if (city.length)
+            this.$delete(city[0].routes, city[0].routes.indexOf((route: any) => route.id == id));
     }
 
     currentRoute:any = null;
 
     updateCurrentRoute(cityId: string, routeId: string) {
-        let city = _(this.Items).find(city => city.id == cityId);
-        this.currentRoute = _(city.routes).find(r => r.id == routeId);
+        let city = this.Items.filter(city => city.id == cityId);
+        if(city.length)
+            this.currentRoute = city[0].routes.filter((r:any) => r.id == routeId)[0];
     }
     
     // cars edit
     routeCarsEdit(cityId: string, routeId: string) {
         this.updateCurrentRoute(cityId, routeId);
-        _(this.Cars).each(f => {
-            f.Checked = _(this.currentRoute.cars).some(q => q == f.ID);
-        });
+        this.Cars.forEach(f => f.Checked = this.currentRoute.cars.filter((q: any) => q == f.ID).length > 0);
         (<any>$("#routeCarsEdit")).modal('show');
     }
     
     routeCarSave(){
-        this.currentRoute.cars = _(this.Cars)
-            .chain()
+        this.currentRoute.cars = this.Cars
             .filter(c => c.Checked)
-            .map(c => c.ID)
-            .value();
+            .map(c => c.ID);
         (<any>$("#routeCarsEdit")).modal('hide');
     }
     
     groupCarSelect(id:string) {
-        _(this.Cars).each(c => {
+        this.Cars.forEach(c => {
             if(c.Group && c.Group.ID == id)
                 c.Checked = true;
         });
@@ -138,14 +134,14 @@ export default class EditIndexComponent extends VueEx {
     // geofences
     routeGeofencesEdit(cityId:string, routeId: string) {
         this.updateCurrentRoute(cityId, routeId);
-        _(this.Geofences).each(f => {
-            f.Checked = _(this.currentRoute.geofences).some(q => q == f.ID);
+        this.Geofences.forEach(f => {
+            f.Checked = this.currentRoute.geofences.filter((q:any) => q == f.ID).length>0;
         });
         (<any>$("#routeGeofencesEdit")).modal('show');
     }
 
     groupGFSelect(id:string) {
-        _(this.Geofences).each(c => {
+        this.Geofences.forEach(c => {
             if(c.Group && c.Group.ID == id)
                 c.Checked = true;
         });
@@ -153,11 +149,9 @@ export default class EditIndexComponent extends VueEx {
     }
 
     routeGeofenceSave() {
-        this.currentRoute.geofences = _(this.Geofences)
-            .chain()
+        this.currentRoute.geofences = this.Geofences
             .filter(c => c.Checked)
-            .map(c => c.ID)
-            .value();
+            .map(c => c.ID);
         (<any>$("#routeGeofencesEdit")).modal('hide');
     }
     
@@ -174,7 +168,9 @@ export default class EditIndexComponent extends VueEx {
         
         let d3 = $.Deferred();
         connector.DataLoad(settings.viewSettings)
-            .done((r:any) => d3.resolve(r[settings.viewSettings] ? r[settings.viewSettings] : null));
+            .done((r:any) => {
+                d3.resolve(r && r[settings.viewSettings] ? r[settings.viewSettings] : null);
+            });
         
         $.when(d1,d2, d3).done((r1,r2,r3) => {
             let settings = r3 == null ? { Cars: [], GFs: [] } : JSON.parse(r3); 
@@ -187,8 +183,8 @@ export default class EditIndexComponent extends VueEx {
     
     convertProps(items:any[], checkedItems:string[]):any[] {
         let props:any = {};
-        _(items).each(it => {
-            _(it.Properties).each(prop => {
+        items.forEach(it => {
+            it.Properties.forEach((prop:any) => {
                 if(props[prop.Name]) return;
                 props[prop.Name] = prop;
             })
@@ -199,16 +195,16 @@ export default class EditIndexComponent extends VueEx {
             let prop = props[k];
             finalProps.push({
                 Name: prop.Name,
-                Checked: _(checkedItems).some(f => f == prop.Name)
+                Checked: checkedItems.filter(f => f == prop.Name).length>0
             });
         }
-        return _(finalProps).sortBy(p => p.Name).value();
+        return finalProps.sort((a,b) => a.Name.localeCompare(b.Name));
     }
     
     viewSettingsSave() {
         let data = {
-            Cars: _(this.PropCars).filter(f => f.Checked).map(f => f.Name).value(),
-            GFs: _(this.PropGFs).filter(f => f.Checked).map(f => f.Name).value()
+            Cars: this.PropCars.filter(f => f.Checked).map(f => f.Name),
+            GFs: this.PropGFs.filter(f => f.Checked).map(f => f.Name)
         };
         
         connector.DataSave(settings.viewSettings, JSON.stringify(data))
@@ -225,8 +221,8 @@ export default class EditIndexComponent extends VueEx {
     
     aboutEdit() {
         connector.DataLoad(settings.aboutSettings)
-            .done((data: any) => {
-                this.About = data[settings.aboutSettings] ?
+            .done(data => {
+                this.About = data && data[settings.aboutSettings] ?
                     JSON.parse(data[settings.aboutSettings])
                     : {
                         Name: "",

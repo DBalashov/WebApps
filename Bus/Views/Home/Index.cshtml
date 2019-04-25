@@ -1,41 +1,10 @@
-﻿<div id='app-root'>Loading...</div>
+﻿@using Newtonsoft.Json
+
+<div id='app-root'>Loading...</div>
  
  @section scripts {
      <script type="text/javascript">
-//         window["external-settings"] = {
-//             Urls: {
-//                 Service: "//localhost/Dev/ServiceJSON",
-//                 Relative: "",
-//                 Content: ""
-//             },
-//             Token: "1BEC4E7B0F12BD533E8650CF08FA163FACE6CA047524C0795B0A10C738F7954F"
-//         }
-window['external-settings'] = {
-    "Name": "Bus1",
-    "Urls": {
-                 Service: "//localhost/Dev/ServiceJSON",
-                 Relative: "",
-                 Content: ""
-    },
-    "Token": "6CFF378EA4B23FCF65B6EAB96050930EA12CF9E1F51B8CC72D1629CE548DACA913F5A60A42EC16766DC587D5150C790BCCB4D9685F8516C30693DBE897FCB27268331A7BE22D6020E86335DD0E697461",
-    "User": {
-        "ID": 1,
-        "UID": "ea9f8789-2a54-41aa-bb41-4480bcc08c73",
-        "Name": "Administrator",
-        "Login": "admin",
-        "Mail": "denisio@tk-chel.ru"
-    },
-    "Organization": {
-        "ID": 49,
-        "UID": "787a3aad-10a8-427a-a956-f9802d46f82d",
-        "Name": "DemoCEBIT2-A9  [49]",
-        "Props": {}
-    },
-    "Settings": {}
-}
-
-
+         window['external-settings'] = @Html.Raw(JsonConvert.SerializeObject(Model));
      </script>
-     
      <script src="~/dist/main.js" asp-append-version="true"></script>
  }

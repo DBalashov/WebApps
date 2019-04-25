@@ -1,6 +1,5 @@
 import {Component} from 'vue-property-decorator';
 import {VueEx} from "../VueEx";
-import _ from 'lodash';
 import {$bus} from "../boot";
 
 @Component
@@ -11,7 +10,7 @@ export default class FooterComponent extends VueEx {
     created() {
         // this.$watch("$route.query.id", this.updateCurrentRoute);
         $bus.$on("mode.update", (newPoints: any[]) => {
-            this.Items = _(newPoints).sortBy(f => f.name).value();
+            this.Items = newPoints.sort((a,b) => a.name.localeCompare(b.name));
         });
     }
 

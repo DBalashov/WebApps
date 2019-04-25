@@ -1,7 +1,6 @@
 import {Component} from 'vue-property-decorator';
 import {VueEx} from "../VueEx";
 import L from 'leaflet';
-import _ from "lodash";
 import $ from "jquery";
 import Cookies from 'universal-cookie';
 import {$bus, connector, ExternalSettings, settings} from "../boot";
@@ -94,8 +93,8 @@ export default class HomeIndexComponent extends VueEx {
     modeEdit() {
         this.editMode = true;
         this.layerPoints.clearLayers();
-        let points = this.cookies.get("bus-points") || [];
-        _(points).each((f:any) => {
+        let points:any[] = this.cookies.get("bus-points") || [];
+        points.forEach(f => {
             let m = this.buildPointMarker(L.latLng(f.ll.lat, f.ll.lng), f.name, true);
             m.on("click", () => this.pointEdit(m));
         });
@@ -104,7 +103,7 @@ export default class HomeIndexComponent extends VueEx {
     modeSave() {
         this.editMode = false;
 
-        let p: any[] = _(this.layerPoints.getLayers())
+        let p: any[] = this.layerPoints.getLayers()
             .map((m: any) => {
                 let ll = m.getLatLng();
                 let content = m.getTooltip().getContent().toString();
@@ -112,8 +111,8 @@ export default class HomeIndexComponent extends VueEx {
                     ll: {lat: ll.lat, lng: ll.lng},
                     name: content
                 }
-            })
-            .value();
+            });
+        
         this.cookies.set("bus-points", JSON.stringify(p));
         this.updateSavedPoints();
         $bus.$emit("mode.update", p);
@@ -126,10 +125,8 @@ export default class HomeIndexComponent extends VueEx {
     
     updateSavedPoints():any[] {
         this.layerPoints.clearLayers();
-        let points = this.cookies.get("bus-points") || [];
-        _(points).each((f:any) => {
-            this.buildPointMarker(L.latLng(f.ll.lat, f.ll.lng), f.name, false);
-        });
+        let points:any[] = this.cookies.get("bus-points") || [];
+        points.forEach(f => this.buildPointMarker(L.latLng(f.ll.lat, f.ll.lng), f.name, false));
         return points;
     }
 
@@ -147,14 +144,11 @@ export default class HomeIndexComponent extends VueEx {
                 //'//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 '//{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
                 {
-                    //subdomains: "abc",
-                    //maxZoom: 19,
-                    reuseTiles: true,
                     updateWhenIdle: true,
                     detectRetina: false
                 }))
             .on("click", (ev:any) => this.pointAdd(ev.latlng))
-            .setView([33.4501001, -101.9107704], 4)
+            .setView([55.15, 61.4], 14)
             .addLayer(this.layerGeofences)
             .addLayer(this.layerPositions)
             .addLayer(this.layerPoints);
@@ -162,11 +156,12 @@ export default class HomeIndexComponent extends VueEx {
         connector.EnumDevices()
             .done(r => {
                 let groups: any = {};
-                _(r.Groups).each(g => groups[g.ID] = g);
-                _(r.Items).each(i => this.refreshCarsInfoItem(groups, i));
+                r.Groups.forEach(g => groups[g.ID] = g);
+                r.Items.forEach(i => this.refreshCarsInfoItem(groups, i));
                 if (this.$route.params.id)
                     this.changeRoute(this.$route.params.id);
             });
+        
         connector.DataLoad(settings.viewSettings).done((r: any) => {
             if (r && r[settings.viewSettings]) 
                 this.viewSettings = JSON.parse(r[settings.viewSettings]);
@@ -191,19 +186,19 @@ export default class HomeIndexComponent extends VueEx {
     changeRoute(id: string) {
         this.markersClear();
         this.needToFitBounds = true;
-        let newRoute: any = _(settings.routes).find((r: any) => r.id == id);
-        if (newRoute.cars)
-            this.carIDs = newRoute.cars;
-
-        this.loadGeofences(newRoute);
-        this.refreshPositions();
+        let newRoutes: any[] = settings.routes.filter((r:any) => r.id == id);
+        if (newRoutes.length && newRoutes[0].cars) {
+            this.carIDs = newRoutes[0].cars;
+            this.loadGeofences(newRoutes[0]);
+            this.refreshPositions();
+        }
     }
 
     loadGeofences(newRoute: any) {
         this.layerGeofences.clearLayers();
         if (newRoute.geofences.length == 0) return;
         connector.GetGeofences(newRoute.geofences).done(r => {
-            _(r).each(p => {
+            r.forEach(p => {
                 if (p.IsPolygon) {
                     this.buildPolygon(p, this.layerGeofences);
                 }
@@ -286,8 +281,8 @@ export default class HomeIndexComponent extends VueEx {
         connector.GetOnlineInfo(this.carIDs)
             .done(r => {
                 let bounds = L.latLngBounds([]);
-                _(r).filter((p: IGetOnlineInfoItem) => p != null && p._LastCoords != null)
-                    .each((p: IGetOnlineInfoItem) => this.refreshPositionItem(p, bounds));
+                r.filter((p: IGetOnlineInfoItem) => p != null && p._LastCoords != null)
+                    .forEach(p => this.refreshPositionItem(p, bounds));
 
                 if (this.map && this.needToFitBounds) {
                     this.map.fitBounds(bounds);
@@ -340,13 +335,13 @@ export default class HomeIndexComponent extends VueEx {
 
         let propValues: any[] = [];
         if (car.Properties && car.Properties.length)
-            _(this.viewSettings.Cars).each(f => {
-                let propValue = _(car.Properties).find(pr => pr.Name == f);
-                if (propValue && propValue.Value && propValue.Value.length)
-                    propValues.push(propValue);
+            this.viewSettings.Cars.forEach(f => {
+                let propValues = car.Properties.filter((pr:any) => pr.Name == f);
+                if (propValues.length && propValues[0].Value && propValues[0].Value.length)
+                    propValues.push(propValues[0]);
             });
 
-        _(propValues).each((f:any) => popupContent.push(f.Name + ": " + (f.Value || "")));
+        propValues.forEach(f => popupContent.push(f.Name + ": " + (f.Value || "")));
         return popupContent.map(p => "<div>"+p+"</div>").join("");
     }
 

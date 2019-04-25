@@ -1,0 +1,15 @@
+﻿@using Newtonsoft.Json
+@{
+    //var host = ViewContext.HttpContext.Request.Scheme + "://" + ViewContext.HttpContext.Request.Host.Host + ViewContext.HttpContext.Request.Path;
+}
+<div id='app-root'>Loading...</div>
+ 
+ @section scripts {
+     <script type="text/javascript">
+         window['external-settings'] = @Html.Raw(JsonConvert.SerializeObject(Model));
+     </script>
+
+     
+     <script src="~/dist/main.js" asp-append-version="true"></script>
+     <script src="~/leaflet.markercluster-src.js"></script>
+ }

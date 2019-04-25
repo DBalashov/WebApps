@@ -1,0 +1,139 @@
+html, body {
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 12pt;
+    margin:0;
+    padding:0;
+    overflow: hidden;
+}
+
+body {
+    margin-top:56px;
+    overflow: hidden !important;
+}
+
+.dropdown-item-selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.dropdown-item-selected:hover {
+    background-color:#007bff;
+}
+
+.nav-link-selected {
+    text-decoration: underline;
+}
+
+.modal-dialog {
+    max-width:700px;
+}
+
+.table th { border: none }
+.table td, .table th { padding:0.1em}
+.badge {
+    font-weight:normal;
+}
+.separator[data-v-918f543e] {
+    border-bottom: 1px solid silver;
+    margin-bottom: 3px;
+    padding-bottom: 8px;
+}
+
+.layout__content {
+    padding-right: 0;
+}
+.layout__side {
+    padding-top: 15px;
+    border-left: 4px solid #343a40;
+}
+.stop-point {
+    background-color: rgba(30,125,52, 0.7);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 1.1em;
+    padding: 0;
+    border: 2px solid #185a27;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
+    padding-top: 0.25rem;
+}
+td.between-time {
+    font-size: 8pt;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 1.1rem;
+    color:silver;
+    border:none;
+}
+.car-marker {
+    width:auto !important;
+    height:auto !important;
+    background: rgba(255,255,255, 0.6);
+    border-radius: 5px;
+    border: 1.5px solid rgba(0,0,255, 0.4);
+    padding:2px 2px 0 2px;
+    text-align: center;
+    box-shadow: 0 0 10px 0 rgba(0,0,0,0.25);
+}
+.car-marker:after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    margin-left: -6px;
+    border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-top: 6px solid rgba(0,0,255, 0.4);
+    z-index: 1;
+}
+.car-marker.old-data {
+    border-color: rgba(255,0,0,0.4);
+}
+.car-marker.old-data .car-marker__title {
+    background: rgba(255,0,0,0.4);
+}
+.car-marker.old-data:after {
+    border-top-color: rgba(255,0,0,0.4);
+}
+.car-marker__image {
+    width: 36px;
+}
+.car-marker__title {
+    position: absolute;
+    left: 0;
+    min-width: 100%;
+    transform: translateY(-100%);
+    margin-top: -6px;
+    padding: 0 2px;
+    font-size: 7pt;
+    color: #fff;
+    font-weight: normal;
+    text-align:center;
+    line-height: 1.1em;
+    max-height: 2em;
+    overflow:hidden;
+    border-radius: 2px;
+    background: rgba(255,0,0,0.4);
+}
+.cluster {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px !important;
+    color: white;
+    font-weight: normal;
+    font-size: 10pt;
+}
+.cluster-normal {
+    background-color: rgba(255,0,0,0.5);
+    border: 1px solid red;
+    box-shadow:0px 0px 10px 0px rgba(255,0,0,0.75);
+}
+.cluster-completed {
+    background-color: rgba(0,255,0,0.5);
+    border: 1px solid rgba(0,255,0,0.5);
+    color: #212529;
+    box-shadow:0px 0px 10px 0px rgba(0, 255, 0, 0.8);
+}

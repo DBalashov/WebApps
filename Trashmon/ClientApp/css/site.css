@@ -1,0 +1,35 @@
+html, body {
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 12pt;
+    margin:0;
+    padding:0;
+    overflow: hidden;
+}
+
+body {
+    margin-top:56px;
+    overflow: hidden !important;
+}
+
+.dropdown-item-selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.dropdown-item-selected:hover {
+    background-color:#007bff;
+}
+
+.nav-link-selected {
+    text-decoration: underline;
+}
+
+.modal-dialog {
+    max-width:700px;
+}
+
+.table th { border: none }
+.table td, .table th { padding:0.1em}
+.badge {
+    font-weight:normal;
+}

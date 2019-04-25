@@ -5,7 +5,7 @@ $PKZ   = "$CD\..\_SharedExt\pkz.exe"
 Remove-Item $BUILD -Force -Recurse -ErrorAction SilentlyContinue
 New-Item $BUILD -ItemType directory | Out-Null
 
-$APPS = @("Bus", "APIExamples")
+$APPS = @("Bus", "APIExamples", "Trashmon")
 
 foreach($app in $APPS) {
     "------------------------------------------------------------------------------------------------------"

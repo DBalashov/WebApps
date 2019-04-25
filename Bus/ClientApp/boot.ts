@@ -27,7 +27,7 @@ export let connector = new ServiceConnector(
     (state: boolean) => $bus.$emit("busy", state));
 
 let routes:RouteConfig[] = [];
-if(ExternalSettings && ExternalSettings.User && ExternalSettings.User.ID)
+if(ExternalSettings && ExternalSettings.User && ExternalSettings.User.UID)
     routes.push({path: ExternalSettings.Urls.Relative + '/Edit', component: require('./Edit/Index.vue').default});
 routes.push({path: ExternalSettings.Urls.Relative + '/:id', component: require('./Home/Index.vue').default});
 routes.push({path: ExternalSettings.Urls.Relative, component: require('./Home/Index.vue').default});

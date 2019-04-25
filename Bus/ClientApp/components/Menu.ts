@@ -1,6 +1,5 @@
 import {Component} from 'vue-property-decorator';
 import {VueEx} from "../VueEx";
-import _ from 'lodash';
 import {$bus, connector, settings} from "../boot";
 import {Vue} from "vue/types/vue";
 import $ from "jquery";
@@ -15,8 +14,8 @@ export default class MenuComponent extends VueEx {
     created() {
         this.$watch("$route.params.id", this.updateCurrentRoute);
         this.$bus = $bus;
-        if(this.ExternalSettings && this.ExternalSettings.User && this.ExternalSettings.User.ID>0)
-            this.showEdit=true;
+        if (this.ExternalSettings && this.ExternalSettings.User && this.ExternalSettings.User.UID)
+            this.showEdit = true;
     }
     
     updateCurrentRoute() {
@@ -24,22 +23,22 @@ export default class MenuComponent extends VueEx {
         let i = 1;
         this.Breadcrumb = [];
         settings.routes = [];
-        _(this.Items).each((it:any) => {
+        this.Items.forEach((it:any) => {
             it.active = false;
             it._id = i++;
             if(it.routes) {
-                _(it.routes).each((route: any) => {
+                it.routes.forEach((route: any) => {
                     route.active = routeId == route.id;
                     route._id = i++;
                     settings.routes.push(route);
                 });
-                
-                let activeItem = _(it.routes).find(r => routeId == r.id);
-                it.active = activeItem != null;
-                if(it.active)
+
+                let activeItem = it.routes.filter((r: any) => routeId == r.id);
+                it.active = activeItem.length > 0;
+                if (it.active)
                     this.Breadcrumb.push(it.name);
-                if(activeItem)
-                    this.Breadcrumb.push(activeItem.name);
+                if (activeItem.length)
+                    this.Breadcrumb.push(activeItem[0].name);
             }
         });
         this.$forceUpdate();
